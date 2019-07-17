@@ -4,6 +4,19 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(function(details) {
 });
 
 
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+
+    console.log("background script "+ request.mes);
+    //if (request.greeting == "hello")
+    var message = request.mes;
+
+      sendResponse({res: "goodbye"+message});
+  });
+
 
 function onRequest(request, sender, callback) {
     switch(request.action) {

@@ -169,10 +169,20 @@ function positionHover(element) {
 function populateHover(linkId) {
   //lastLink = linkId;
 
-  var div = document.createElement("div");
+  var output;
+  chrome.runtime.sendMessage({mes: linkId}, function(response) {
+    console.log(response);
+    output = response.res;
+    console.log(output);
+    var div = document.createElement("div");
   
-  div.textContent = linkId;
-  $('#sentiment-hover').html(div);
+    div.textContent = output;
+    $('#sentiment-hover').html(div);
+  });
+
+ 
+
+
 
 
 
