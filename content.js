@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Reddit Hover Text. If not, see <http://www.gnu.org/licenses/>.
  **/
-
 /**
  * The timeout variable we use to delay showing and hiding of the hover div.
  **/
