@@ -1,0 +1,22 @@
+{
+    "manifest_version": 2,
+    "name": "Sentiment Analysis",
+    "version": "0.1.3",
+    "content_scripts": [
+      {
+        "matches": [
+            "*://github.com/*"
+          ],
+        "css": ["style.css"],
+        "js": ["jquery.min.js","content.js"],
+        "run_at": "document_start",
+        "all_frames": true
+      }
+    ],
+    "permissions": [ 
+      "*://github.com/*","activeTab", "webNavigation"
+    ],
+    "background": {
+        "scripts": ["jquery.min.js","background.js"]
+    }
+}
