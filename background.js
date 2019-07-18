@@ -30,9 +30,9 @@ function doSomething(data){
   console.log(mp.get("name"));
 
   
-  console.log(mp);
+  console.log(key);
 }
-doSomething(x);
+doSomething(Emoticon);
 // var url = chrome.runtime.getURL('/test.json');
 // fetch(url)
 //     .then((response) => {response.json()}) //assuming file contains json

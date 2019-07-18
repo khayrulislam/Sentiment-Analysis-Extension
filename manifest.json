@@ -16,7 +16,7 @@
     ],
     "permissions": [ "*://github.com/*","activeTab", "webNavigation" ],
     "background": {
-        "scripts": [ "jquery.min.js","test.js","background.js" ]
+        "scripts": [ "jquery.min.js","data.js","background.js" ]
     }
 
 }
