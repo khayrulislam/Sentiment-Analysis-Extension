@@ -56,7 +56,7 @@ $(document).ready(function() {
  * in the content.
  **/
 function initHover() {
-  $('body').append('<div id="sentiment-hover">a</div>');
+  $('body').append('<div id="sentiment-hover"></div>');
   $('#sentiment-hover').hide();
 
   $('#sentiment-hover').hover(function() {
@@ -158,6 +158,25 @@ function positionHover(element) {
   $('#sentiment-hover').css('top', position.top + $(element).height() + 2);
 }
 
+function createHoverDiv(output){
+  var mainDiv = document.createElement("div");
+  var titleParagraph = document.createElement("p");
+  var horizontalLine = document.createElement("hr");
+  var textParagraph = document.createElement("p");
+
+  titleParagraph.className = 'text-title';
+  titleParagraph.innerText = "sentiment value : ";
+
+  textParagraph.className = 'text-content';
+  textParagraph.innerText = output;
+
+  mainDiv.appendChild(titleParagraph);
+  mainDiv.appendChild(horizontalLine);
+  mainDiv.appendChild(textParagraph);
+
+  return mainDiv;
+};
+
 /**
  * This is where we actually put content into the hover div. We start by
  * placing our loading gif so the user knows that we are retreiving the data.
@@ -174,13 +193,18 @@ function populateHover(linkId) {
     console.log(response);
     output = response.res;
     console.log(output);
-    var div = document.createElement("div");
-  
-    div.textContent = output;
+
+    
+
+    var div = createHoverDiv(output);
+    // div.className = 'text-content';
+    // var text = document.createTextNode(output);
+    // div.appendChild(text);
+    // //div.textContent = output;
     $('#sentiment-hover').html(div);
   });
 
- 
+
 
 
 
