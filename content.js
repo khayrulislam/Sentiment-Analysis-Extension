@@ -47,6 +47,11 @@ $(document).ready(function() {
 
   $('div.repository-content').on('mouseenter', 'a.message.js-navigation-open', handleMouseEnter);
   $('div.repository-content').on('mouseleave', 'a.message.js-navigation-open', handleMouseLeave);
+
+  $('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handleMouseEnter2);
+
+  //$('div.Box').on('mouseenter', 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open', handleMouseEnter2);
+
 });
 
 /**
@@ -124,6 +129,87 @@ var thingElement = e;
 //     }, showDelay);
 //   }
 }
+
+
+function handleMouseEnter2(e) {
+  var thingElement = e.currentTarget;
+
+  var list = thingElement.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
+
+for(var i=0;i<list.length;i++){
+  console.log(list[i].nodeName);
+}
+
+
+
+  // setTimeout(function(){ 
+
+  //   var x = document.getElementsByClassName("Popover-message Popover-message--large Box box-shadow-large Popover-message--bottom-left");
+  //   var y = x[0].children[0].children[0] ;
+
+  //   var para = document.createElement("P");
+  //   para.innerText = "new text added";
+  //   y.appendChild(para);
+
+  // }, 500)
+
+
+
+   
+
+
+
+
+
+
+
+  
+  
+  // extract commit message
+  
+    // var commitMessage = e.target.attributes[0].value;
+    // var commitId = e.target.attributes[3].value;
+  
+    // console.log(commitMessage);
+    // console.log(commitId);
+  
+    // calculate the sentiment of the commit message
+  
+    // var showDelay = 250;
+    // showTimeout = setTimeout(function() {
+    //   showTimeout = null;
+    //   populateHover(commitMessage);
+    //   positionHover($(e.target));
+    //   showHover();
+    // }, showDelay);
+  
+  //  var thingElement = $(e.target).closest('.thing');
+  
+  //   var linkId = $(thingElement).data('fullname');
+  //   var url = $(e.target).attr('href');
+  //   var showDelay = 250;
+  //   var regex = new RegExp('/r/.*/comments');
+  
+  //   if (regex.exec(url) !== null &&
+  //       $(e.target).closest('.entry').find('.expando-button.selftext').length === 1) {
+  //     if (hideTimeout !== null && lastLink !== linkId) {
+  //       clearTimeout(hideTimeout);
+  //       hideTimeout = null;
+  //       showDelay = 0;
+  //     }
+  
+  //     showTimeout = setTimeout(function() {
+  //       showTimeout = null;
+  //       if (lastLink !== linkId) {
+  //         lastUrl = getRedditUrl() + url;
+  //         populateHover(linkId);
+  //       }
+  
+  //       positionHover($(e.target));
+  //       showHover();
+  //     }, showDelay);
+  //   }
+  }
 
 /**
  * This is the event handler for mouseleave both on links and on the actual
