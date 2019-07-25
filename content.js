@@ -42,11 +42,26 @@ var lastLink;
  * are text based submissions and not url submissions. We add eventhandlers for
  * mouseenter and mouseleave to the text submissions.
  **/
+var eventPosition = {
+  commitMessagePosition : 'div.repository-content',
+};
+
+var eventName = {
+  mouseEnter : 'mouseenter',
+  mouseLeave : 'mouseleave'
+};
+
+var selector = {
+  commitMessageLink : 'a.message.js-navigation-open',
+
+};
+
+
 $(document).ready(function() {
   initHover();
 
-  $('div.repository-content').on('mouseenter', 'a.message.js-navigation-open', handleMouseEnter);
-  $('div.repository-content').on('mouseleave', 'a.message.js-navigation-open', handleMouseLeave);
+  $(eventPosition.commitMessagePosition).on(eventName.mouseEnter , selector.commitMessageLink , handleCommitMessageMouseEnter);
+  $(eventPosition.commitMessagePosition).on(eventName.mouseLeave , selector.commitMessageLink , handleMouseLeave);
 
   $('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handleMouseEnter2);
 
@@ -81,54 +96,41 @@ function initHover() {
  *
  * @argument {object} e The event object.
  **/
-function handleMouseEnter(e) {
+function handleCommitMessageMouseEnter(e) {
 var thingElement = e;
 
 // extract commit message
 
-  var commitMessage = e.target.attributes[0].value;
-  var commitId = e.target.attributes[3].value;
+  var commit = getCommitInfo(e);
 
-  console.log(commitMessage);
-  console.log(commitId);
+  var commitMessage = e.target.event.target.attribute[0].value;
+  var commitId = e.target.event.target.attribute[3].value;
+
+  //console.log(commitMessage);
+  //console.log(commitId);
 
   // calculate the sentiment of the commit message
 
   var showDelay = 250;
   showTimeout = setTimeout(function() {
     showTimeout = null;
-    populateHover(commitMessage);
+    populateHover(commit.message);
     positionHover($(e.target));
     showHover();
   }, showDelay);
 
-//  var thingElement = $(e.target).closest('.thing');
+};
 
-//   var linkId = $(thingElement).data('fullname');
-//   var url = $(e.target).attr('href');
-//   var showDelay = 250;
-//   var regex = new RegExp('/r/.*/comments');
 
-//   if (regex.exec(url) !== null &&
-//       $(e.target).closest('.entry').find('.expando-button.selftext').length === 1) {
-//     if (hideTimeout !== null && lastLink !== linkId) {
-//       clearTimeout(hideTimeout);
-//       hideTimeout = null;
-//       showDelay = 0;
-//     }
-
-//     showTimeout = setTimeout(function() {
-//       showTimeout = null;
-//       if (lastLink !== linkId) {
-//         lastUrl = getRedditUrl() + url;
-//         populateHover(linkId);
-//       }
-
-//       positionHover($(e.target));
-//       showHover();
-//     }, showDelay);
-//   }
-}
+function getCommitInfo(event){
+  var commit = {};
+  Object.keys(event.target.attribute).forEach(element => {
+    if(event.target.attribute[element].name === 'aria-label') commit.message = event.target.attribute[element].value;
+    else if (event.target.attribute[element].name === 'href') commit.id = event.target.attribute[element].value;
+    else if (event.target.attribute[element].name === 'class') commit.class = event.target.attribute[element].value;
+  });
+  return commit;
+};
 
 
 function handleMouseEnter2(e) {
@@ -167,8 +169,8 @@ for(var i=0;i<list.length;i++){
   
   // extract commit message
   
-    // var commitMessage = e.target.attributes[0].value;
-    // var commitId = e.target.attributes[3].value;
+    // var commitMessage = e.target.event.target.attribute[0].value;
+    // var commitId = e.target.event.target.attribute[3].value;
   
     // console.log(commitMessage);
     // console.log(commitId);
