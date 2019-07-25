@@ -13,22 +13,29 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 
-function doSomething(data){
-  var mp = new Map;
 
-  var key = Object.keys(data)
 
-  key.forEach(element => {
-    mp.set(element,data[element])
-  });
+// load all the data file
 
-  console.log(mp.get("nm"));
-  console.log(mp.get("name"));
+
+
+
+// function doSomething(data){
+//   var mp = new Map;
+
+//   var key = Object.keys(data)
+
+//   key.forEach(element => {
+//     mp.set(element,data[element])
+//   });
+
+//   console.log(mp.get("nm"));
+//   console.log(mp.get("name"));
 
   
-  console.log(key);
-}
-doSomething(Emoticon);
+//   console.log(key);
+// }
+// doSomething(Emoticon);
 // var url = chrome.runtime.getURL('/test.json');
 // fetch(url)
 //     .then((response) => {response.json()}) //assuming file contains json
