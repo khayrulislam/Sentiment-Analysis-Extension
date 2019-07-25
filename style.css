@@ -30,6 +30,10 @@ div#sentiment-hover {
   font-size: 0.9em;
   text-align: left;  
 }
+
+.line-margin{
+  margin: 0px, 5px;
+}
 /* 
 div#sentiment-hover img {
   margin: 10px;

@@ -5,6 +5,8 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(function(details) {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   var output = {};
+  // calculate sentiment value
+  output.value = -100;
   output.text = request.data.message;
   output.type = request.data.type;
   sendResponse( { data: output });

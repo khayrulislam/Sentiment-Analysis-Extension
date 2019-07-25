@@ -243,6 +243,8 @@ function createHoverDiv(output){
   titleParagraph.className = 'text-title';
   titleParagraph.innerText = "sentiment value : ";
 
+  horizontalLine.className = 'line-margin';
+
   textParagraph.className = 'text-content';
   textParagraph.innerText = output;
 
