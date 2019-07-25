@@ -1,19 +1,13 @@
-
 chrome.webNavigation.onHistoryStateUpdated.addListener(function(details) {
   chrome.tabs.executeScript(null,{file:"content.js"});
 });
 
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log(sender.tab ?
-              "from a content script:" + sender.tab.url :
-              "from the extension");
-
-  console.log("background script "+ request.mes);
-  //if (request.greeting == "hello")
-  var message = request.mes;
-
-    sendResponse({res: "goodbye"+message});
+  var output = {};
+  output.text = request.data.message;
+  output.type = request.data.type;
+  sendResponse( { data: output });
 });
 
 

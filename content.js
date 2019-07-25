@@ -97,24 +97,12 @@ function initHover() {
  * @argument {object} e The event object.
  **/
 function handleCommitMessageMouseEnter(e) {
-var thingElement = e;
-
-// extract commit message
-
+  var thingElement = e;
   var commit = getCommitInfo(e);
-
-  var commitMessage = e.target.event.target.attribute[0].value;
-  var commitId = e.target.event.target.attribute[3].value;
-
-  //console.log(commitMessage);
-  //console.log(commitId);
-
-  // calculate the sentiment of the commit message
-
-  var showDelay = 250;
+  var showDelay = 100;
   showTimeout = setTimeout(function() {
     showTimeout = null;
-    populateHover(commit.message);
+    populateHover(commit);
     positionHover($(e.target));
     showHover();
   }, showDelay);
@@ -123,11 +111,11 @@ var thingElement = e;
 
 
 function getCommitInfo(event){
-  var commit = {};
-  Object.keys(event.target.attribute).forEach(element => {
-    if(event.target.attribute[element].name === 'aria-label') commit.message = event.target.attribute[element].value;
-    else if (event.target.attribute[element].name === 'href') commit.id = event.target.attribute[element].value;
-    else if (event.target.attribute[element].name === 'class') commit.class = event.target.attribute[element].value;
+  var commit = { type: 'commit' };
+  Object.keys(event.target.attributes).forEach(element => {
+    if(event.target.attributes[element].name === 'aria-label') commit.message = event.target.attributes[element].value;
+    else if (event.target.attributes[element].name === 'href') commit.id = event.target.attributes[element].value;
+    else if (event.target.attributes[element].name === 'class') commit.class = event.target.attributes[element].value;
   });
   return commit;
 };
@@ -169,8 +157,8 @@ for(var i=0;i<list.length;i++){
   
   // extract commit message
   
-    // var commitMessage = e.target.event.target.attribute[0].value;
-    // var commitId = e.target.event.target.attribute[3].value;
+    // var commitMessage = e.target.event.target.attributes[0].value;
+    // var commitId = e.target.event.target.attributes[3].value;
   
     // console.log(commitMessage);
     // console.log(commitId);
@@ -273,52 +261,13 @@ function createHoverDiv(output){
  *
  * @argument {string} linkId The id of the link to fetch.
  **/
-function populateHover(linkId) {
-  //lastLink = linkId;
-
+function populateHover(input) {
   var output;
-  chrome.runtime.sendMessage({mes: linkId}, function(response) {
-    console.log(response);
-    output = response.res;
-    console.log(output);
-
-    
-
-    var div = createHoverDiv(output);
-    // div.className = 'text-content';
-    // var text = document.createTextNode(output);
-    // div.appendChild(text);
-    // //div.textContent = output;
+  chrome.runtime.sendMessage( { data : input } , function(response) {
+    output = response.data;
+    var div = createHoverDiv(output.text);
     $('#sentiment-hover').html(div);
   });
-
-
-
-
-
-
-
-  // $('#sentiment-hover').html('<img src="' + chrome.extension.getURL(getLoadingImage()) + '" />');
-  // $.ajax({
-  //   url: getRedditUrl() + '/api/expando',
-  //   type: 'POST',
-  //   data: {
-  //     'link_id': linkId
-  //   },
-  //   success: function(data) {
-  //     $('#sentiment-hover').html(html_entity_decode(data));
-  //     $('#sentiment-hover').prepend(getOptionsDiv());
-
-  //     if (markAsVisitedEnabled()) {
-  //       chrome.extension.sendRequest({ action: 'addUrlToHistory', url: lastUrl });
-  //     }
-  //   }
-  // }).fail(function() {
-  //   hideHover();
-  //   lastUrl = '';
-  //   lastLink = null;
-  //   $('#sentiment-hover').html('');
-  // });
 }
 
 /**
@@ -342,77 +291,77 @@ function hideHover() {
  * requests when fetching from the API and marks the correct URL as
  * visited when that option is enabled.
  */
-function getRedditUrl() {
-  return window.location.origin;
-}
+// function getRedditUrl() {
+//   return window.location.origin;
+// }
 
-function getLoadingImage() {
-  if ($('body.res-nightmode').length) {
-    return "ajax-loader-night.gif";
-  } else {
-    return "ajax-loader.gif";
-  }
-}
+// function getLoadingImage() {
+//   if ($('body.res-nightmode').length) {
+//     return "ajax-loader-night.gif";
+//   } else {
+//     return "ajax-loader.gif";
+//   }
+// }
 
-function getOptionsDiv() {
-  var div = $('<div class="optionsDiv"></div>');
-  var markAsVisited = $('<a href="#">Mark as visited</a>');
-  var visitedHelp = $('<span>(Click to toggle marking links as visited.)</span>');
+// function getOptionsDiv() {
+//   var div = $('<div class="optionsDiv"></div>');
+//   var markAsVisited = $('<a href="#">Mark as visited</a>');
+//   var visitedHelp = $('<span>(Click to toggle marking links as visited.)</span>');
 
-  if(!markAsVisitedEnabled()) {
-    markAsVisited.addClass('enableisited');
-  } else {
-    markAsVisited.addClass('disableVisited');
-  }
+//   if(!markAsVisitedEnabled()) {
+//     markAsVisited.addClass('enableisited');
+//   } else {
+//     markAsVisited.addClass('disableVisited');
+//   }
 
-  $(markAsVisited).bind('click', function(event) {
-    event.preventDefault();
-    toggleMarkAsVisited();
+//   $(markAsVisited).bind('click', function(event) {
+//     event.preventDefault();
+//     toggleMarkAsVisited();
 
-    if(!markAsVisitedEnabled()) {
-      $(this).addClass('enableVisited');
-      $(this).removeClass('disableVisited');
-    } else {
-      $(this).addClass('disableVisited');
-      $(this).removeClass('enableVisited');
+//     if(!markAsVisitedEnabled()) {
+//       $(this).addClass('enableVisited');
+//       $(this).removeClass('disableVisited');
+//     } else {
+//       $(this).addClass('disableVisited');
+//       $(this).removeClass('enableVisited');
 
-      chrome.extension.sendRequest({action: 'addUrlToHistory', url: lastUrl});
-    }
-  });
+//       chrome.extension.sendRequest({action: 'addUrlToHistory', url: lastUrl});
+//     }
+//   });
 
-  $(markAsVisited).bind('mouseenter', {help: visitedHelp}, function(event) {
-    $(event.data.help).show();
-  });
-  $(markAsVisited).bind('mouseleave', {help: visitedHelp}, function(event) {
-    $(event.data.help).hide();
-  });
+//   $(markAsVisited).bind('mouseenter', {help: visitedHelp}, function(event) {
+//     $(event.data.help).show();
+//   });
+//   $(markAsVisited).bind('mouseleave', {help: visitedHelp}, function(event) {
+//     $(event.data.help).hide();
+//   });
 
-  $(div).prepend(visitedHelp);
-  $(visitedHelp).hide();
-  $(div).prepend(markAsVisited);
+//   $(div).prepend(visitedHelp);
+//   $(visitedHelp).hide();
+//   $(div).prepend(markAsVisited);
 
-  return div;
-}
+//   return div;
+// }
 
-function toggleMarkAsVisited() {
-  if(markAsVisitedEnabled()) {
-    localStorage.setItem('markAsVisited', false);
-  } else {
-    localStorage.setItem('markAsVisited', true);
-  }
-}
+// function toggleMarkAsVisited() {
+//   if(markAsVisitedEnabled()) {
+//     localStorage.setItem('markAsVisited', false);
+//   } else {
+//     localStorage.setItem('markAsVisited', true);
+//   }
+// }
 
-function markAsVisitedEnabled() {
-  return localStorage.getItem('markAsVisited') === 'true';
-}
+// function markAsVisitedEnabled() {
+//   return localStorage.getItem('markAsVisited') === 'true';
+// }
 
-/**
- * A helper function for translating html entities into their real characters
- * since we are using the html markup that reddit provides to format the data
- * in the hover div.
- *
- * @argument {string} str The input string.
- **/
-function html_entity_decode(str) {
-  return $('<textarea />').html(str).text();
-}
+// /**
+//  * A helper function for translating html entities into their real characters
+//  * since we are using the html markup that reddit provides to format the data
+//  * in the hover div.
+//  *
+//  * @argument {string} str The input string.
+//  **/
+// function html_entity_decode(str) {
+//   return $('<textarea />').html(str).text();
+// }
