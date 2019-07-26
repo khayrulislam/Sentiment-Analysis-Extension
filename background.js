@@ -12,9 +12,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   sendResponse( { data: output });
 });
 
-
-
-
 // load all the data file
 
 
