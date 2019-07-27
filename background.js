@@ -13,6 +13,65 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 
+var boosterWordMap = new Map;
+var emotionWordMap = new Map;
+var emotionPefixMap = new Map;
+var slangMap = new Map;
+var idiomMap = new Map;
+var emoticonMap = new Map;
+var englishWordsMap = new Map;
+var negatingWordsMap = new Map;
+var questionWordsMap = new Map;
+
+
+loadAllData();
+
+function loadAllData(){
+  var keys = Object.keys(BoosterWord);
+  keys.forEach(element=>{
+    boosterWordMap.set(element,BoosterWord[element]);
+  });
+
+  keys = Object.keys(EmotionWord);
+  keys.forEach(element=>{
+    emotionWordMap.set(element,EmotionWord[element]);
+  });
+
+  keys = Object.keys(EmotionPefix);
+  keys.forEach(element=>{
+    emotionPefixMap.set(element,EmotionPefix[element]);
+  });
+
+  keys = Object.keys(Slang);
+  keys.forEach(element=>{
+    slangMap.set(element,Slang[element]);
+  });
+
+  keys = Object.keys(Idiom);
+  keys.forEach(element=>{
+    idiomMap.set(element,Idiom[element]);
+  });
+
+  keys = Object.keys(Emoticon);
+  keys.forEach(element=>{
+    emoticonMap.set(element,Emoticon[element]);
+  });
+
+  keys = EnglishWords;
+  keys.forEach(element=>{
+    englishWordsMap.set(element,true);
+  });
+
+  keys = NegatingWords;
+  keys.forEach(element=>{
+    negatingWordsMap.set(element,true);
+  });
+
+  keys = QuestionWords;
+  keys.forEach(element=>{
+    questionWordsMap.set(element,true);
+  });
+}
 
 
 // load all the data file
