@@ -44,6 +44,7 @@ var lastLink;
  **/
 var eventPosition = {
   commitMessagePosition : 'div.repository-content',
+  commentMessagePosition : 'div.timeline-comment-group.js-minimizable-comment-group.js-targetable-comment'
 };
 
 var eventName = {
@@ -53,7 +54,7 @@ var eventName = {
 
 var selector = {
   commitMessageLink : 'a.message.js-navigation-open',
-
+  commentMessageTopBox : 'h3.timeline-comment-header-text.f5.text-normal'
 };
 
 
@@ -61,9 +62,14 @@ $(document).ready(function() {
   initHover();
 
   $(eventPosition.commitMessagePosition).on(eventName.mouseEnter , selector.commitMessageLink , handleCommitMessageMouseEnter);
-  $(eventPosition.commitMessagePosition).on(eventName.mouseLeave , selector.commitMessageLink , handleMouseLeave);
+  $(eventPosition.commitMessagePosition).on(eventName.mouseLeave , selector.commitMessageLink ,  handleMouseLeave);
+  
+  $(eventPosition.commentMessagePosition).on(eventName.mouseEnter , selector.commentMessageTopBox , handelCommentMessageMouseEnter);
+  $(eventPosition.commentMessagePosition).on(eventName.mouseLeave , selector.commentMessageTopBox , handelCommentMessageMouseEnter);
 
-  $('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handleMouseEnter2);
+
+
+  //$('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handelCommentMessageMouseEnter);
 
   //$('div.Box').on('mouseenter', 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open', handleMouseEnter2);
 
@@ -97,7 +103,6 @@ function initHover() {
  * @argument {object} e The event object.
  **/
 function handleCommitMessageMouseEnter(e) {
-  var thingElement = e;
   var commit = getCommitInfo(e);
   var showDelay = 100;
   showTimeout = setTimeout(function() {
@@ -106,10 +111,7 @@ function handleCommitMessageMouseEnter(e) {
     positionHover($(e.target));
     showHover();
   }, showDelay);
-
 };
-
-
 function getCommitInfo(event){
   var commit = { type: 'commit' };
   Object.keys(event.target.attributes).forEach(element => {
@@ -121,14 +123,101 @@ function getCommitInfo(event){
 };
 
 
-function handleMouseEnter2(e) {
-  var thingElement = e.currentTarget;
 
-  var list = thingElement.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
+function handelCommentMessageMouseEnter(e){
+  var comment = getCommentInfo(e.currentTarget);
+};
 
-for(var i=0;i<list.length;i++){
-  console.log(list[i].nodeName);
-}
+
+
+
+var ancor = /<a [^>]+>([^<]+)<\/a>/g ;
+var br = /<br\s*\/?>/g ;
+var code = /<code>(.*?)<\/code>/g ;
+var space = /\s\s+/g ;
+var bracket = /[{()}]/g ;
+//var slashWord = /\s(.+)[\/.+)]+/g;
+
+
+
+
+function getCommentInfo(event){
+  var comment = { type : 'comment',
+                  message : ''
+                };
+  var elementList  = event.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
+  Object.keys(elementList).forEach(element=>{
+    if(elementList[element].nodeName === 'P' ) {
+      comment.message += getTextFromParagraphElement(elementList[element]);
+    }
+    else if(elementList[element].nodeName === 'OL' || elementList[element].nodeName === 'UL'){
+      comment.message += getTextFromList(elementList[element].children);
+    }
+
+    else if(elementList[element].nodeName === 'BLOCKQUOTE' ){
+      comment.message += getTextFromList(elementList[element].children);
+    }
+
+    comment.message += '\n';
+  });
+
+  var mes = comment.message.replace(ancor,'');
+  var mes = mes.replace(br,'');
+  var mes = mes.replace(code,'');
+  //console.log(mes);
+  var mes = mes.replace(space,' ');
+  var mes = mes.replace(bracket,'');
+
+
+  comment.message = mes;
+
+  return comment;
+
+  //var mes = mes.replace(slashWord,'');
+  //console.log(mes);
+};
+
+
+// function getTextFromBlockquote(blockquoteList){
+//   var text = '';
+//   Object.keys(blockquoteList).forEach(item=>{
+//     if(blockquoteList[item].nodeName === 'P') text += getTextFromParagraphElement(blockquoteList[item]);
+//     else if(blockquoteList[item].nodeName === 'blockquote' ) text += getTextFromBlockquote(blockquoteList[item].children);
+//     text += '\n';
+//   });
+//   return text;
+// };
+
+function getTextFromList(list){
+  var text = '';
+  Object.keys(list).forEach( item => {
+    if( list[item].nodeName === 'P' ) text += getTextFromParagraphElement(list[item]);
+    else if( list[item].nodeName === 'LI' ) {
+      if(list[item].children.nodeName === 'P') text += getTextFromList(list[item].children);
+      else text += getTextFromParagraphElement(list[item]);
+    }
+    else if( list[item].nodeName === 'BLOCKQUOTE' ) text += getTextFromList(list[item].children);
+    else if( list[item].nodeName === 'OL' || list[item].nodeName === 'UL' ) text += getTextFromList(list[item].children);
+    text += '\n';
+  });
+  return text;
+};
+
+
+function getTextFromParagraphElement(element){
+  return element.innerHTML;
+};
+
+
+
+// function handleMouseEnter2(e) {
+//   var thingElement = e.currentTarget;
+
+//   var list = thingElement.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
+
+// for(var i=0;i<list.length;i++){
+//   console.log(list[i].nodeName);
+// }
 
 
 
@@ -199,7 +288,7 @@ for(var i=0;i<list.length;i++){
   //       showHover();
   //     }, showDelay);
   //   }
-  }
+  //}
 
 /**
  * This is the event handler for mouseleave both on links and on the actual
@@ -234,7 +323,7 @@ function positionHover(element) {
   $('#sentiment-hover').css('top', position.top + $(element).height() + 2);
 }
 
-function createHoverDiv(output){
+function createHoverDiv(text){
   var mainDiv = document.createElement("div");
   var titleParagraph = document.createElement("p");
   var horizontalLine = document.createElement("hr");
@@ -243,10 +332,10 @@ function createHoverDiv(output){
   titleParagraph.className = 'text-title';
   titleParagraph.innerText = "sentiment value : ";
 
-  horizontalLine.className = 'line-margin';
+  horizontalLine.className = 'horizontal-line';
 
   textParagraph.className = 'text-content';
-  textParagraph.innerText = output;
+  textParagraph.innerText = text;
 
   mainDiv.appendChild(titleParagraph);
   mainDiv.appendChild(horizontalLine);
@@ -264,10 +353,9 @@ function createHoverDiv(output){
  * @argument {string} linkId The id of the link to fetch.
  **/
 function populateHover(input) {
-  var output;
   chrome.runtime.sendMessage( { data : input } , function(response) {
-    output = response.data;
-    var div = createHoverDiv(output.text);
+    var result = response.data;
+    var div = createHoverDiv(result.text);
     $('#sentiment-hover').html(div);
   });
 }
@@ -347,14 +435,14 @@ function hideHover() {
 
 // function toggleMarkAsVisited() {
 //   if(markAsVisitedEnabled()) {
-//     localStorage.setItem('markAsVisited', false);
+//     localStorage.setelement('markAsVisited', false);
 //   } else {
-//     localStorage.setItem('markAsVisited', true);
+//     localStorage.setelement('markAsVisited', true);
 //   }
 // }
 
 // function markAsVisitedEnabled() {
-//   return localStorage.getItem('markAsVisited') === 'true';
+//   return localStorage.getelement('markAsVisited') === 'true';
 // }
 
 // /**
