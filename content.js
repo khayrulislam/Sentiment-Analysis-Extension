@@ -65,7 +65,7 @@ $(document).ready(function() {
   $(eventPosition.commitMessagePosition).on(eventName.mouseLeave , selector.commitMessageLink ,  handleMouseLeave);
   
   $(eventPosition.commentMessagePosition).on(eventName.mouseEnter , selector.commentMessageTopBox , handelCommentMessageMouseEnter);
-  $(eventPosition.commentMessagePosition).on(eventName.mouseLeave , selector.commentMessageTopBox , handelCommentMessageMouseEnter);
+  $(eventPosition.commentMessagePosition).on(eventName.mouseLeave , selector.commentMessageTopBox , handleMouseLeave);
 
 
 
@@ -108,7 +108,7 @@ function handleCommitMessageMouseEnter(e) {
   showTimeout = setTimeout(function() {
     showTimeout = null;
     populateHover(commit);
-    positionHover($(e.target));
+    positionHover($(e.target), e.pageX);
     showHover();
   }, showDelay);
 };
@@ -126,16 +126,24 @@ function getCommitInfo(event){
 
 function handelCommentMessageMouseEnter(e){
   var comment = getCommentInfo(e.currentTarget);
+  var showDelay = 100;
+  showTimeout = setTimeout(function() {
+    showTimeout = null;
+    populateHover(comment);
+    positionHover($(e.target), e.pageX);
+    showHover();
+  }, showDelay);
 };
 
 
 
 
-var ancor = /<a [^>]+>([^<]+)<\/a>/g ;
-var br = /<br\s*\/?>/g ;
+var ancor = /<a [^>]+>(.*?)<\/a>/g ;
 var code = /<code>(.*?)<\/code>/g ;
 var space = /\s\s+/g ;
-var bracket = /[{()}]/g ;
+var bracket = /[{()}":\[\]]+/g ;
+var tag = /<(g-emoji|\/g-emoji|strong|\/strong|em|\/em|p|\/p|li|\/li|ol|\/ol|ul|\/ul|span|\/span|svg|\/svg|input|br\s*\/?)[^>]*>/g;
+
 //var slashWord = /\s(.+)[\/.+)]+/g;
 
 
@@ -147,28 +155,18 @@ function getCommentInfo(event){
                 };
   var elementList  = event.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
   Object.keys(elementList).forEach(element=>{
-    if(elementList[element].nodeName === 'P' ) {
-      comment.message += getTextFromParagraphElement(elementList[element]);
-    }
-    else if(elementList[element].nodeName === 'OL' || elementList[element].nodeName === 'UL'){
-      comment.message += getTextFromList(elementList[element].children);
-    }
-
-    else if(elementList[element].nodeName === 'BLOCKQUOTE' ){
-      comment.message += getTextFromList(elementList[element].children);
-    }
-
+    if(elementList[element].nodeName === 'P' ) comment.message += getInnerHTMlFromElement(elementList[element]);
+    else if(elementList[element].nodeName === 'OL' || elementList[element].nodeName === 'UL' || elementList[element].nodeName === 'BLOCKQUOTE' ) comment.message += getTextFromList(elementList[element].children);
     comment.message += '\n';
   });
 
   var mes = comment.message.replace(ancor,'');
-  var mes = mes.replace(br,'');
   var mes = mes.replace(code,'');
   //console.log(mes);
-  var mes = mes.replace(space,' ');
+  var mes = mes.replace(tag,'');
   var mes = mes.replace(bracket,'');
-
-
+  var mes = mes.replace(space,' ');
+  console.log(mes);
   comment.message = mes;
 
   return comment;
@@ -181,7 +179,7 @@ function getCommentInfo(event){
 // function getTextFromBlockquote(blockquoteList){
 //   var text = '';
 //   Object.keys(blockquoteList).forEach(item=>{
-//     if(blockquoteList[item].nodeName === 'P') text += getTextFromParagraphElement(blockquoteList[item]);
+//     if(blockquoteList[item].nodeName === 'P') text += getInnerHTMlFromElement(blockquoteList[item]);
 //     else if(blockquoteList[item].nodeName === 'blockquote' ) text += getTextFromBlockquote(blockquoteList[item].children);
 //     text += '\n';
 //   });
@@ -191,20 +189,16 @@ function getCommentInfo(event){
 function getTextFromList(list){
   var text = '';
   Object.keys(list).forEach( item => {
-    if( list[item].nodeName === 'P' ) text += getTextFromParagraphElement(list[item]);
-    else if( list[item].nodeName === 'LI' ) {
-      if(list[item].children.nodeName === 'P') text += getTextFromList(list[item].children);
-      else text += getTextFromParagraphElement(list[item]);
-    }
-    else if( list[item].nodeName === 'BLOCKQUOTE' ) text += getTextFromList(list[item].children);
-    else if( list[item].nodeName === 'OL' || list[item].nodeName === 'UL' ) text += getTextFromList(list[item].children);
+    if( list[item].nodeName === 'P' ) text += getInnerHTMlFromElement(list[item]);
+    else if( list[item].nodeName === 'OL' || list[item].nodeName === 'UL' || list[item].nodeName === 'BLOCKQUOTE') text += getTextFromList(list[item].children);
+    else if( list[item].nodeName === 'LI' ) text += getInnerHTMlFromElement(list[item]);
     text += '\n';
   });
   return text;
 };
 
 
-function getTextFromParagraphElement(element){
+function getInnerHTMlFromElement(element){
   return element.innerHTML;
 };
 
@@ -316,31 +310,32 @@ function handleMouseLeave(e) {
  * @argument {object} element The element used to decide the placement of the
  * hover div.
  **/
-function positionHover(element) {
+function positionHover(element, x) {
   var position = $(element).offset();
-
-  $('#sentiment-hover').css('left', position.left);
+  $('#sentiment-hover').css('left', x);
   $('#sentiment-hover').css('top', position.top + $(element).height() + 2);
+  // $('#sentiment-hover').css('left', position.left);
+  // $('#sentiment-hover').css('top', position.top + $(element).height() + 2);
 }
 
-function createHoverDiv(text){
+function createHoverDiv(content){
   var mainDiv = document.createElement("div");
   var titleParagraph = document.createElement("p");
   var horizontalLine = document.createElement("hr");
   var textParagraph = document.createElement("p");
 
   titleParagraph.className = 'text-title';
-  titleParagraph.innerText = "sentiment value : ";
-
-  horizontalLine.className = 'horizontal-line';
-
-  textParagraph.className = 'text-content';
-  textParagraph.innerText = text;
-
+  titleParagraph.innerText = "Sentiment value : "+content.value;
   mainDiv.appendChild(titleParagraph);
-  mainDiv.appendChild(horizontalLine);
-  mainDiv.appendChild(textParagraph);
 
+  if(content.type === 'commit'){
+    horizontalLine.className = 'horizontal-line';
+    mainDiv.appendChild(horizontalLine);
+
+    textParagraph.className = 'text-content';
+    textParagraph.innerText = content.text;
+    mainDiv.appendChild(textParagraph);
+  }
   return mainDiv;
 };
 
@@ -355,7 +350,7 @@ function createHoverDiv(text){
 function populateHover(input) {
   chrome.runtime.sendMessage( { data : input } , function(response) {
     var result = response.data;
-    var div = createHoverDiv(result.text);
+    var div = createHoverDiv(result);
     $('#sentiment-hover').html(div);
   });
 }
