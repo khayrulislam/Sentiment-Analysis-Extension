@@ -44,7 +44,8 @@ var lastLink;
  **/
 var eventPosition = {
   commitMessagePosition : 'div.repository-content',
-  commentMessagePosition : 'div.timeline-comment-group.js-minimizable-comment-group.js-targetable-comment'
+  commentMessagePosition : 'div.timeline-comment-group.js-minimizable-comment-group.js-targetable-comment',
+  issueTitlePosition : 'div.Box'
 };
 
 var eventName = {
@@ -54,7 +55,8 @@ var eventName = {
 
 var selector = {
   commitMessageLink : 'a.message.js-navigation-open',
-  commentMessageTopBox : 'h3.timeline-comment-header-text.f5.text-normal'
+  commentMessageTopBox : 'h3.timeline-comment-header-text.f5.text-normal',
+  issueTitleLink : 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open'
 };
 
 
@@ -67,11 +69,14 @@ $(document).ready(function() {
   $(eventPosition.commentMessagePosition).on(eventName.mouseEnter , selector.commentMessageTopBox , handelCommentMessageMouseEnter);
   $(eventPosition.commentMessagePosition).on(eventName.mouseLeave , selector.commentMessageTopBox , handleMouseLeave);
 
+  $(eventPosition.issueTitlePosition).on(eventName.mouseEnter , selector.issueTitleLink , handelIssueTitle);
+  $(eventPosition.issueTitlePosition).on(eventName.mouseLeave , selector.issueTitleLink , handleMouseLeave);
+
 
 
   //$('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handelCommentMessageMouseEnter);
 
-  //$('div.Box').on('mouseenter', 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open', handleMouseEnter2);
+  $('div.Box').on('mouseenter', 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open', handleMouseEnter2);
 
 });
 
@@ -102,6 +107,16 @@ function initHover() {
  *
  * @argument {object} e The event object.
  **/
+var ancor = /<a [^>]+>(.*?)<\/a>/g ;
+var code = /<code>(.*?)<\/code>/g ;
+var space = /\s\s+/g ;
+var bracket = /[{()}"\[\]0-9#\+*]+/g ;
+var tag = /<(g-emoji|\/g-emoji|strong|\/strong|em|\/em|p|\/p|li|\/li|ol|\/ol|ul|\/ul|span|\/span|svg|\/svg|input|br\s*\/?)[^>]*>/g;
+var url = /(http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+/g;
+
+
+// commit extract segment start
+
 function handleCommitMessageMouseEnter(e) {
   var commit = getCommitInfo(e);
   var showDelay = 100;
@@ -112,6 +127,7 @@ function handleCommitMessageMouseEnter(e) {
     showHover();
   }, showDelay);
 };
+
 function getCommitInfo(event){
   var commit = { type: 'commit' };
   Object.keys(event.target.attributes).forEach(element => {
@@ -119,10 +135,14 @@ function getCommitInfo(event){
     else if (event.target.attributes[element].name === 'href') commit.id = event.target.attributes[element].value;
     else if (event.target.attributes[element].name === 'class') commit.class = event.target.attributes[element].value;
   });
+  //commit.message = commit.message.replace(bracket,'');
+  //commit.message = commit.message.replace(url,'');
   return commit;
 };
 
+// commit segment end
 
+// comment extract segment start
 
 function handelCommentMessageMouseEnter(e){
   var comment = getCommentInfo(e.currentTarget);
@@ -134,20 +154,6 @@ function handelCommentMessageMouseEnter(e){
     showHover();
   }, showDelay);
 };
-
-
-
-
-var ancor = /<a [^>]+>(.*?)<\/a>/g ;
-var code = /<code>(.*?)<\/code>/g ;
-var space = /\s\s+/g ;
-var bracket = /[{()}":\[\]]+/g ;
-var tag = /<(g-emoji|\/g-emoji|strong|\/strong|em|\/em|p|\/p|li|\/li|ol|\/ol|ul|\/ul|span|\/span|svg|\/svg|input|br\s*\/?)[^>]*>/g;
-
-//var slashWord = /\s(.+)[\/.+)]+/g;
-
-
-
 
 function getCommentInfo(event){
   var comment = { type : 'comment',
@@ -170,21 +176,7 @@ function getCommentInfo(event){
   comment.message = mes;
 
   return comment;
-
-  //var mes = mes.replace(slashWord,'');
-  //console.log(mes);
 };
-
-
-// function getTextFromBlockquote(blockquoteList){
-//   var text = '';
-//   Object.keys(blockquoteList).forEach(item=>{
-//     if(blockquoteList[item].nodeName === 'P') text += getInnerHTMlFromElement(blockquoteList[item]);
-//     else if(blockquoteList[item].nodeName === 'blockquote' ) text += getTextFromBlockquote(blockquoteList[item].children);
-//     text += '\n';
-//   });
-//   return text;
-// };
 
 function getTextFromList(list){
   var text = '';
@@ -197,9 +189,18 @@ function getTextFromList(list){
   return text;
 };
 
-
 function getInnerHTMlFromElement(element){
   return element.innerHTML;
+};
+
+// comment segment end
+
+
+
+// issue title segment start
+
+function handelIssueTitle(e){
+
 };
 
 
@@ -350,8 +351,13 @@ function createHoverDiv(content){
 function populateHover(input) {
   chrome.runtime.sendMessage( { data : input } , function(response) {
     var result = response.data;
-    var div = createHoverDiv(result);
-    $('#sentiment-hover').html(div);
+
+    if(result.type === 'commit' || result.type === 'comment' ){
+      var div = createHoverDiv(result);
+      $('#sentiment-hover').html(div);
+    }
+
+
   });
 }
 
