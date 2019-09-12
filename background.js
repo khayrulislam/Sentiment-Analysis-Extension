@@ -77,6 +77,9 @@ function loadAllData(){
 
 function claculateSentiment(text){
 
+  // split text to sentence array
+  
+
   var wordArray = text.split(" ");
   wordArray.pop(); 
   
