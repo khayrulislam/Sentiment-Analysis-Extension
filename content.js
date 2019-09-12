@@ -44,6 +44,8 @@ var lastLink;
  **/
 var eventPosition = {
   commitMessagePosition : 'div.repository-content',
+  commentMessagePosition : 'div.timeline-comment-group.js-minimizable-comment-group.js-targetable-comment',
+  issueTitlePosition : 'div.Box'
 };
 
 var eventName = {
@@ -53,7 +55,8 @@ var eventName = {
 
 var selector = {
   commitMessageLink : 'a.message.js-navigation-open',
-
+  commentMessageTopBox : 'h3.timeline-comment-header-text.f5.text-normal',
+  issueTitleLink : 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open'
 };
 
 
@@ -61,9 +64,17 @@ $(document).ready(function() {
   initHover();
 
   $(eventPosition.commitMessagePosition).on(eventName.mouseEnter , selector.commitMessageLink , handleCommitMessageMouseEnter);
-  $(eventPosition.commitMessagePosition).on(eventName.mouseLeave , selector.commitMessageLink , handleMouseLeave);
+  $(eventPosition.commitMessagePosition).on(eventName.mouseLeave , selector.commitMessageLink ,  handleMouseLeave);
+  
+  $(eventPosition.commentMessagePosition).on(eventName.mouseEnter , selector.commentMessageTopBox , handelCommentMessageMouseEnter);
+  $(eventPosition.commentMessagePosition).on(eventName.mouseLeave , selector.commentMessageTopBox , handleMouseLeave);
 
-  $('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handleMouseEnter2);
+  $(eventPosition.issueTitlePosition).on(eventName.mouseEnter , selector.issueTitleLink , handelIssueTitle);
+  $(eventPosition.issueTitlePosition).on(eventName.mouseLeave , selector.issueTitleLink , handleMouseLeave);
+
+
+
+  //$('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handelCommentMessageMouseEnter);
 
   //$('div.Box').on('mouseenter', 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open', handleMouseEnter2);
 
@@ -96,19 +107,27 @@ function initHover() {
  *
  * @argument {object} e The event object.
  **/
+var ancor = /<a [^>]+>(.*?)<\/a>/g ;
+var code = /<code>(.*?)<\/code>/g ;
+var space = /\s\s+/g ;
+var bracket = /[{()}"\[\]0-9#$\+*]+/g ;
+var tag = /<(g-emoji|\/g-emoji|strong|\/strong|em|\/em|p|\/p|li|\/li|ol|\/ol|ul|\/ul|span|\/span|svg|\/svg|input|br\s*\/?)[^>]*>/g;
+var url = /(http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+/g;
+var extraSpace = /[\/:`,-]+|[\n]+/g; 
+//var number = //g;
+
+// commit extract segment start
+
 function handleCommitMessageMouseEnter(e) {
-  var thingElement = e;
   var commit = getCommitInfo(e);
   var showDelay = 100;
   showTimeout = setTimeout(function() {
     showTimeout = null;
     populateHover(commit);
-    positionHover($(e.target));
+    positionHover($(e.target), e.pageX);
     showHover();
   }, showDelay);
-
 };
-
 
 function getCommitInfo(event){
   var commit = { type: 'commit' };
@@ -117,18 +136,98 @@ function getCommitInfo(event){
     else if (event.target.attributes[element].name === 'href') commit.id = event.target.attributes[element].value;
     else if (event.target.attributes[element].name === 'class') commit.class = event.target.attributes[element].value;
   });
+
+  commit.message = filterMessage(commit.message);
+  //commit.message = commit.message.replace(bracket,'');
+  //commit.message = commit.message.replace(url,'');
   return commit;
 };
 
+// commit segment end
 
-function handleMouseEnter2(e) {
-  var thingElement = e.currentTarget;
-
-  var list = thingElement.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
-
-for(var i=0;i<list.length;i++){
-  console.log(list[i].nodeName);
+function filterMessage(message){
+  var text = message;
+  text = text.replace(ancor,'');
+  text = text.replace(code,'');
+  text = text.replace(bracket,' ');
+  text = text.replace(tag,'');
+  text = text.replace(url,'');
+  text = text.replace(extraSpace,' ');
+  text = text.replace(space,' ');
+  return text;
 }
+
+// comment extract segment start
+
+function handelCommentMessageMouseEnter(e){
+  var comment = getCommentInfo(e.currentTarget);
+  var showDelay = 100;
+  showTimeout = setTimeout(function() {
+    showTimeout = null;
+    populateHover(comment);
+    positionHover($(e.target), e.pageX);
+    showHover();
+  }, showDelay);
+};
+
+function getCommentInfo(event){
+  var comment = { type : 'comment',
+                  message : ''
+                };
+  var elementList  = event.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
+  Object.keys(elementList).forEach(element=>{
+    if(elementList[element].nodeName === 'P' ) comment.message += getInnerHTMlFromElement(elementList[element]);
+    else if(elementList[element].nodeName === 'OL' || elementList[element].nodeName === 'UL' || elementList[element].nodeName === 'BLOCKQUOTE' ) comment.message += getTextFromList(elementList[element].children);
+    comment.message += '\n';
+  });
+
+  var mes = comment.message.replace(ancor,'');
+  var mes = mes.replace(code,'');
+  //console.log(mes);
+  var mes = mes.replace(tag,'');
+  var mes = mes.replace(bracket,'');
+  var mes = mes.replace(space,' ');
+  console.log(mes);
+  comment.message = mes;
+
+  return comment;
+};
+
+function getTextFromList(list){
+  var text = '';
+  Object.keys(list).forEach( item => {
+    if( list[item].nodeName === 'P' ) text += getInnerHTMlFromElement(list[item]);
+    else if( list[item].nodeName === 'OL' || list[item].nodeName === 'UL' || list[item].nodeName === 'BLOCKQUOTE') text += getTextFromList(list[item].children);
+    else if( list[item].nodeName === 'LI' ) text += getInnerHTMlFromElement(list[item]);
+    text += '\n';
+  });
+  return text;
+};
+
+function getInnerHTMlFromElement(element){
+  return element.innerHTML;
+};
+
+// comment segment end
+
+
+
+// issue title segment start
+
+function handelIssueTitle(e){
+
+};
+
+
+
+// function handleMouseEnter2(e) {
+//   var thingElement = e.currentTarget;
+
+//   var list = thingElement.offsetParent.children[1].children[0].children[0].children[0].children[0].children[0].children;
+
+// for(var i=0;i<list.length;i++){
+//   console.log(list[i].nodeName);
+// }
 
 
 
@@ -199,7 +298,7 @@ for(var i=0;i<list.length;i++){
   //       showHover();
   //     }, showDelay);
   //   }
-  }
+  //}
 
 /**
  * This is the event handler for mouseleave both on links and on the actual
@@ -227,31 +326,32 @@ function handleMouseLeave(e) {
  * @argument {object} element The element used to decide the placement of the
  * hover div.
  **/
-function positionHover(element) {
+function positionHover(element, x) {
   var position = $(element).offset();
-
-  $('#sentiment-hover').css('left', position.left);
+  $('#sentiment-hover').css('left', x);
   $('#sentiment-hover').css('top', position.top + $(element).height() + 2);
+  // $('#sentiment-hover').css('left', position.left);
+  // $('#sentiment-hover').css('top', position.top + $(element).height() + 2);
 }
 
-function createHoverDiv(output){
+function createHoverDiv(content){
   var mainDiv = document.createElement("div");
   var titleParagraph = document.createElement("p");
   var horizontalLine = document.createElement("hr");
   var textParagraph = document.createElement("p");
 
   titleParagraph.className = 'text-title';
-  titleParagraph.innerText = "sentiment value : ";
-
-  horizontalLine.className = 'line-margin';
-
-  textParagraph.className = 'text-content';
-  textParagraph.innerText = output;
-
+  titleParagraph.innerText = "Sentiment value : "+content.value;
   mainDiv.appendChild(titleParagraph);
-  mainDiv.appendChild(horizontalLine);
-  mainDiv.appendChild(textParagraph);
 
+  if(content.type === 'commit'){
+    horizontalLine.className = 'horizontal-line';
+    mainDiv.appendChild(horizontalLine);
+
+    textParagraph.className = 'text-content';
+    textParagraph.innerText = content.text;
+    mainDiv.appendChild(textParagraph);
+  }
   return mainDiv;
 };
 
@@ -264,11 +364,15 @@ function createHoverDiv(output){
  * @argument {string} linkId The id of the link to fetch.
  **/
 function populateHover(input) {
-  var output;
   chrome.runtime.sendMessage( { data : input } , function(response) {
-    output = response.data;
-    var div = createHoverDiv(output.text);
-    $('#sentiment-hover').html(div);
+    var result = response.data;
+
+    if(result.type === 'commit' || result.type === 'comment' ){
+      var div = createHoverDiv(result);
+      $('#sentiment-hover').html(div);
+    }
+
+
   });
 }
 
@@ -347,14 +451,14 @@ function hideHover() {
 
 // function toggleMarkAsVisited() {
 //   if(markAsVisitedEnabled()) {
-//     localStorage.setItem('markAsVisited', false);
+//     localStorage.setelement('markAsVisited', false);
 //   } else {
-//     localStorage.setItem('markAsVisited', true);
+//     localStorage.setelement('markAsVisited', true);
 //   }
 // }
 
 // function markAsVisitedEnabled() {
-//   return localStorage.getItem('markAsVisited') === 'true';
+//   return localStorage.getelement('markAsVisited') === 'true';
 // }
 
 // /**
