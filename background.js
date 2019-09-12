@@ -7,7 +7,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   var output = {};
   // calculate sentiment value
   output.value = -100;
-  output.text = request.data.message;
+  var tt =  claculateSentiment(request.data.message) ;
+  output.text = tt;
   output.type = request.data.type;
   sendResponse( { data: output });
 });
@@ -73,7 +74,34 @@ function loadAllData(){
   });
 }
 
+function claculateSentiment(text){
 
+  var wordArray = text.split(" ");
+  wordArray.pop(); 
+  
+  var wordMap = new Map;
+  wordArray.forEach(word=>{
+    wordMap.set(word, 0);
+  });
+
+  wordArray.forEach(word=>{
+    var s = emotionWordMap.get(word);
+    if(emotionWordMap.get(word) != undefined ) wordMap.set(word, emotionWordMap.get(word));
+  });
+  var lastIndex = 0;
+  wordArray.forEach(word=>{
+    if(wordMap.get(word) != undefined){
+      
+      var pos = text.indexOf(word,lastIndex);
+      text = text.slice(0,pos)+'['+wordMap.get(word)+']'+ text.slice(pos);
+      lastIndex = pos + word.length + 3;
+    }
+  });
+
+
+  console.log(text);
+  return text;
+}
 // load all the data file
 
 

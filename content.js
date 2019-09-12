@@ -76,7 +76,7 @@ $(document).ready(function() {
 
   //$('div.unminimized-comment.comment.previewable-edit.js-task-list-container.js-comment.timeline-comment.reorderable-task-lists ').on('mouseenter', 'h3.timeline-comment-header-text.f5.text-normal', handelCommentMessageMouseEnter);
 
-  $('div.Box').on('mouseenter', 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open', handleMouseEnter2);
+  //$('div.Box').on('mouseenter', 'a.link-gray-dark.v-align-middle.no-underline.h4.js-navigation-open', handleMouseEnter2);
 
 });
 
@@ -110,10 +110,11 @@ function initHover() {
 var ancor = /<a [^>]+>(.*?)<\/a>/g ;
 var code = /<code>(.*?)<\/code>/g ;
 var space = /\s\s+/g ;
-var bracket = /[{()}"\[\]0-9#\+*]+/g ;
+var bracket = /[{()}"\[\]0-9#$\+*]+/g ;
 var tag = /<(g-emoji|\/g-emoji|strong|\/strong|em|\/em|p|\/p|li|\/li|ol|\/ol|ul|\/ul|span|\/span|svg|\/svg|input|br\s*\/?)[^>]*>/g;
 var url = /(http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+/g;
-
+var extraSpace = /[\/:`,-]+|[\n]+/g; 
+//var number = //g;
 
 // commit extract segment start
 
@@ -135,12 +136,26 @@ function getCommitInfo(event){
     else if (event.target.attributes[element].name === 'href') commit.id = event.target.attributes[element].value;
     else if (event.target.attributes[element].name === 'class') commit.class = event.target.attributes[element].value;
   });
+
+  commit.message = filterMessage(commit.message);
   //commit.message = commit.message.replace(bracket,'');
   //commit.message = commit.message.replace(url,'');
   return commit;
 };
 
 // commit segment end
+
+function filterMessage(message){
+  var text = message;
+  text = text.replace(ancor,'');
+  text = text.replace(code,'');
+  text = text.replace(bracket,' ');
+  text = text.replace(tag,'');
+  text = text.replace(url,'');
+  text = text.replace(extraSpace,' ');
+  text = text.replace(space,' ');
+  return text;
+}
 
 // comment extract segment start
 

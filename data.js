@@ -30,6 +30,7 @@ var BoosterWord = {
 };
 
 var EmotionWord = { 
+'on':'4',
 'abate':'-2',
 'abject':'-2',
 'abrupt':'-2',
