@@ -9,7 +9,7 @@
       {
         "matches": [ "*://github.com/*" ],
         "css": [ "style.css" ],
-        "js": [ "jquery.min.js","content.js" ],
+        "js": [ "jquery.min.3.js","content.js" ],
         "run_at": "document_start",
         "all_frames": true
       }

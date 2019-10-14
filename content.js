@@ -341,7 +341,7 @@ function createHoverDiv(content){
   var textParagraph = document.createElement("p");
 
   titleParagraph.className = 'text-title';
-  titleParagraph.innerText = "Sentiment value : "+content.value;
+  titleParagraph.innerText = "Sentiment value : "+content.PosSentiment + "  "+content.NegSentiment;
   mainDiv.appendChild(titleParagraph);
 
   if(content.type === 'commit'){
@@ -364,17 +364,51 @@ function createHoverDiv(content){
  * @argument {string} linkId The id of the link to fetch.
  **/
 function populateHover(input) {
-  chrome.runtime.sendMessage( { data : input } , function(response) {
-    var result = response.data;
+  // chrome.runtime.sendMessage( { data : input } , function(response) {
+  //   var result = response.data;
 
-    if(result.type === 'commit' || result.type === 'comment' ){
-      var div = createHoverDiv(result);
-      $('#sentiment-hover').html(div);
+  //   if(result.type === 'commit' || result.type === 'comment' ){
+  //     var div = createHoverDiv(result);
+  //     $('#sentiment-hover').html(div);
+  //   }
+  // });
+
+  $.ajax({
+    url: 'https://localhost:44365/api/Sentiment/CalculateSentiment',
+    type: 'POST',
+    crossDomain: true,
+    cache:false,
+    async:false,
+    data: JSON.stringify( {
+      'Message': input.message,
+      'Type': input.type
+    }),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function(data) {
+      
+      if(data.Type === 'commit' || data.Type === 'comment' ){
+        var div = createHoverDiv(data);
+        $('#sentiment-hover').html(div);
+      }
     }
-
-
+  }).fail(function() {
+    hideHover();
+    lastUrl = '';
+    lastLink = null;
+    $('#sentiment-hover').html('');
   });
+
 }
+
+
+
+
+
+
+
+
+
 
 /**
  * This shows the hover div, it's in a separate function in case we decide to
