@@ -1,0 +1,11 @@
+diff a/background.js b/background.js	(rejected hunks)
+@@ -12,9 +12,6 @@
+   sendResponse( { data: output });
+ });
+ 
+-
+-
+-
+ // load all the data file
+ 
+ 

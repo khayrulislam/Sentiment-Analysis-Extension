@@ -14,6 +14,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 
+
 var boosterWordMap = new Map;
 var emotionWordMap = new Map;
 var emotionPefixMap = new Map;
@@ -75,6 +76,9 @@ function loadAllData(){
 }
 
 function claculateSentiment(text){
+
+  // split text to sentence array
+  
 
   var wordArray = text.split(" ");
   wordArray.pop(); 
